@@ -1,2 +1,1 @@
-interest-noawait /usr/lib/systemd/boot/efi/systemd-bootx64.efi
-interest-noawait /usr/lib/systemd/boot/efi/linuxx64.efi.stub
+interest-noawait /usr/lib/systemd/boot/efi
