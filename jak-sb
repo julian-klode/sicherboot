@@ -1,0 +1,206 @@
+#!/bin/sh -e
+#
+# Copyright (C) 2016 Julian Andres Klode <jak@debian.org>
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+. /etc/os-release
+
+KEY_HOME=/var/lib/jak-systemd-secure-boot/keys
+BOOT_DIR="/boot/"
+BOOT_EFI_DIR="/boot/efi"
+MACHINE_ID="$(cat /etc/machine-id)"
+KEYTOOL=/usr/lib/efitools/x86_64-linux-gnu/KeyTool.efi
+
+set -e
+
+BUILD_IMAGE_HELP="Usage: jak-sb build-image <kernel> <initramfs> <output> [<cmdline>]
+
+  Combine the kernel image, the initramfs image, and an optional cmdline
+  file into a UEFI executable.
+"
+build_image() {
+    if [ $# -ne 3 -a $# -ne 4 ]; then
+        printf "%b\n" "$BUILD_IMAGE_HELP" >&2
+        exit 1
+    fi
+
+    local kernel_image="$1"
+    local initramfs_image="$2"
+    local combined_image="$3"
+    local cmdline="${4:-/etc/kernel/cmdline}"
+    local efistub="/usr/lib/systemd/boot/efi/linuxx64.efi.stub"
+
+
+    objcopy \
+        --add-section .osrel=/etc/os-release --change-section-vma .osrel=0x20000 \
+        --add-section .cmdline="$cmdline" --change-section-vma .cmdline=0x30000 \
+        --add-section .linux="$kernel_image" --change-section-vma .linux=0x40000 \
+        --add-section .initrd="$initramfs_image" --change-section-vma .initrd=0x3000000 \
+        "$efistub" "$combined_image"
+}
+
+SIGN_IMAGE_HELP="Usage: jak-sb sign-image <efi-executable>
+
+  Sign the given executable using the db key.
+"
+sign_image() {
+    if [ $# -ne 1 ]; then
+        printf "%b\n" "$SIGN_IMAGE_HELP" >&2
+        exit 1
+    fi
+
+    local image="$1"
+    local out="$2"
+
+    cp $image $image.jak-bak
+    sbsign --key $KEY_HOME/db.key \
+           --cert $KEY_HOME/db.crt \
+           --output "$image"  "$image.jak-bak"
+    rm "$image.jak-bak"
+}
+
+_create_loader_entry() {
+    local conf="$1"
+    local image="$2"
+    local version="$3"
+    local cmdline="$(cat /etc/kernel/cmdline)"
+    
+    echo "title $PRETTY_NAME" > "$conf"
+    echo "machine-id $MACHINE_ID" >> "$conf"
+    echo "version $version" >> "$conf"
+    echo "options $cmdline" >> "$conf"
+    echo "linux $image" >> "$conf"
+}
+
+INSTALL_KERNEL_HELP="Usage: jak-sb install-kernel [<version>]
+
+  Install the given kernel version to the ESP(s). If no kernel is given, the
+  currently running one is installed.
+"
+install_kernel() {
+    local version="${1:-$(uname -r)}"
+    local image="$BOOT_EFI_DIR/$MACHINE_ID/$version/linux.efi"
+    local conf="$BOOT_EFI_DIR/loader/entries/$MACHINE_ID-$version.conf"
+
+    _create_loader_entry  "$conf" "$image" "$version"
+    build_image "$BOOT_DIR/vmlinuz-$version" \
+                "$BOOT_DIR/initrd.img-$version" \
+                "$image"
+    sign_image "$image"
+}
+
+BOOTCTL_HELP="Usage: jak-sb bootctl [<argument> ...]
+
+  Run bootctl with the given arguments and afterwards sign the
+  systemd-bootx64.efi
+"
+bootctl() {
+    command bootctl --path="$BOOT_EFI_DIR" "$@"
+    sign_image "$BOOT_EFI_DIR/EFI/systemd/systemd-bootx64.efi"
+}
+
+ENROLL_KEYS_HELP="Usage: jak-sb enroll-keys
+
+  Install signed db, KEK, and PK (self-signed) keys into your ESP, together
+  with KeyTool, so you can easily flash the new key."
+enroll_keys() {
+    local image="$BOOT_EFI_DIR/$MACHINE_ID/KeyTool.efi"
+    local conf="$BOOT_EFI_DIR/loader/entries/$MACHINE_ID-keytool.conf"
+    local key_dir_rel="Keys/$MACHINE_ID"
+    local key_dir="$BOOT_EFI_DIR/$key_dir_rel"
+
+    mkdir -p "$key_dir"
+    #cp "$KEY_HOME/db.auth" "$key_dir"
+    #cp "$KEY_HOME/KEK.auth" "$key_dir"
+    #cp "$KEY_HOME/PEM.auth" "$key_dir"
+
+    echo "Installed signed key files into the $key_dir_rel directory in the ESP."
+
+    cp "$KEYTOOL" "$image"
+    sign_image "$image"
+
+    echo "title UEFI Key Setup Tool" > "$conf"
+    echo "machine-id $MACHINE_ID" >> "$conf"
+    echo "efi $image" >> "$conf"
+
+    echo "Installed KeyTool into the ESP."
+    echo
+    echo "To finish enrolling the keys, reboot the machine, make sure it"
+    echo "is in setup mode, launch KeyTool, save the old keys, and then"
+    echo "replace them, in the following order:"
+    echo "  (1) db (signed by KEK)"
+    echo "  (2) KEK (key exchange key, signed by PK)"
+    echo "  (3) PK (platform key, self signed)"
+    echo
+    echo "Once your PK key has been replaced, your system is put into user"
+    echo "mode (you might need to reboot for it to take effect). From then"
+    echo "on, all key changes and binaries need to be signed by the parent"
+    echo "key. Binaries with db, db with KEK, KEK and PK with PK."
+    echo
+    echo "If you want to put your system into setup mode again, you can do"
+    echo "so by placing $KEY_HOME/rm_PK.auth into your ESP's Keys folder and"
+    echo "replacing the PK with it. This is a signed empty file which will"
+    echo "thus remove the existing PK which means the device is in setup"
+    echo "mode again."
+    echo "Do not reuse the same keys again after re-entering setup mode this"
+    echo "way, as anyone could just remove the key again by flashing rm_PK.auth"
+}
+
+help() {
+    printf "%b\n" "$BUILD_IMAGE_HELP" 
+    printf "%b\n" "$SIGN_IMAGE_HELP"
+    printf "%b\n" "$INSTALL_KERNEL_HELP"
+    printf "%b\n" "$BOOTCTL_HELP"
+    printf "%b\n" "$ENROLL_KEYS_HELP"
+}
+
+
+# Main part of script
+if [ $# -lt 1 ]; then
+    echo "E: No command specified" >&2
+    help >&2
+    exit 1
+fi
+
+command="$1"
+shift
+case "$command" in
+    "build-image")
+        build_image "$@";;
+    "sign-image")
+        sign_image "$@";;
+    "install-kernel")
+        install_kernel "$@";;
+    "bootctl")
+        bootctl "$@";;
+    "--help"|"help"|"-h")
+        echo "jak-sb - Secure boot and bootloader management stuff"
+        echo
+        help 
+        ;;
+    "enroll-keys")
+        enroll_keys "$@" ;;
+    *)
+        echo "jak-sb - Secure boot and bootloader management stuff" >&2
+        echo >&2
+        help >&2
+        exit 1
+        ;;
+esac

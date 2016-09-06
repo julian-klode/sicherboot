@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+
+/etc/kernel/postinst.d/dracut.SecureBoot
+
+echo "jak-secure-systemd-boot: Installing $1 to ESP"
+
+jak-sb install-kernel "$1"
+
+

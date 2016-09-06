@@ -1,0 +1,5 @@
+jak-systemd-secure-boot (0.1.0) unstable; urgency=low
+
+  * Initial upload
+
+ -- Julian Andres Klode <jak@debian.org>  Tue, 06 Sep 2016 17:18:50 +0200
