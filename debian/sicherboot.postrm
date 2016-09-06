@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = "purge" ]; then
+    dpkg-divert --package sicherboot --rename --remove /etc/kernel/postinst.d/dracut
+fi
+
+#DEBHELPER#

@@ -30,7 +30,7 @@ KEYTOOL=/usr/lib/efitools/x86_64-linux-gnu/KeyTool.efi
 
 set -e
 
-BUILD_IMAGE_HELP="Usage: jak-sb build-image <kernel> <initramfs> <output> [<cmdline>]
+BUILD_IMAGE_HELP="Usage: sicherboot build-image <kernel> <initramfs> <output> [<cmdline>]
 
   Combine the kernel image, the initramfs image, and an optional cmdline
   file into a UEFI executable.
@@ -56,7 +56,7 @@ build_image() {
         "$efistub" "$combined_image"
 }
 
-SIGN_IMAGE_HELP="Usage: jak-sb sign-image <efi-executable>
+SIGN_IMAGE_HELP="Usage: sicherboot sign-image <efi-executable>
 
   Sign the given executable using the db key.
 "
@@ -89,7 +89,7 @@ _create_loader_entry() {
     echo "linux $image" >> "$conf"
 }
 
-INSTALL_KERNEL_HELP="Usage: jak-sb install-kernel [<version>]
+INSTALL_KERNEL_HELP="Usage: sicherboot install-kernel [<version>]
 
   Install the given kernel version to the ESP(s). If no kernel is given, the
   currently running one is installed.
@@ -108,7 +108,7 @@ install_kernel() {
     sign_image "$image"
 }
 
-REMOVE_KERNEL_HELP="Usage: jak-sb remove-kernel [<version>]
+REMOVE_KERNEL_HELP="Usage: sicherboot remove-kernel [<version>]
 
   Removes a kernel from the ESP.
 """
@@ -123,7 +123,7 @@ remove_kernel() {
     rmdir "$image_dir" || true
 }
 
-BOOTCTL_HELP="Usage: jak-sb bootctl [<argument> ...]
+BOOTCTL_HELP="Usage: sicherboot bootctl [<argument> ...]
 
   Run bootctl with the given arguments and afterwards sign the
   systemd-bootx64.efi
@@ -133,7 +133,7 @@ bootctl() {
     sign_image "$BOOT_EFI_DIR/EFI/systemd/systemd-bootx64.efi"
 }
 
-ENROLL_KEYS_HELP="Usage: jak-sb enroll-keys
+ENROLL_KEYS_HELP="Usage: sicherboot enroll-keys
 
   Install signed db, KEK, and PK (self-signed) keys into your ESP, together
   with KeyTool, so you can easily flash the new key."
@@ -211,14 +211,14 @@ case "$command" in
     "bootctl")
         bootctl "$@";;
     "--help"|"help"|"-h")
-        echo "jak-sb - Secure boot and bootloader management stuff"
+        echo "sicherboot - Secure boot and bootloader management stuff"
         echo
         help 
         ;;
     "enroll-keys")
         enroll_keys "$@" ;;
     *)
-        echo "jak-sb - Secure boot and bootloader management stuff" >&2
+        echo "sicherboot - Secure boot and bootloader management stuff" >&2
         echo >&2
         help >&2
         exit 1

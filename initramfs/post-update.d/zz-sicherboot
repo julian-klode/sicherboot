@@ -5,6 +5,6 @@ case "$DPKG_MAINTSCRIPT_PACKAGE" in
         exit 0
         ;;
     *)
-        jak-sb install-kernel "$1"
+        sicherboot install-kernel "$1"
         ;;
 esac

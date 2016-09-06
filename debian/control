@@ -1,20 +1,20 @@
-Source: jak-systemd-secure-boot
+Source: sicherboot
 Section: utils
 Priority: optional
 Maintainer: Julian Andres Klode <jak@debian.org>
 Build-Depends: debhelper (>= 9)
 Standards-Version: 3.9.8
-Homepage: http://jak-linux.org/projects/jak-systemd-secure-boot/
-Vcs-Git: https://github.com/julian-klode/jak-systemd-secure-boot
-Vcs-Browser: https://github.com/julian-klode/jak-systemd-secure-boot
+Homepage: http://jak-linux.org/projects/sicherboot/
+Vcs-Git: https://github.com/julian-klode/sicherboot
+Vcs-Browser: https://github.com/julian-klode/sicherboot
 
-Package: jak-systemd-secure-boot
+Package: sicherboot
 Architecture: all
 Depends: ${misc:Depends}, ${shlibs:Depends}, efitools, binutils, systemd
 Recommends: dracut
 Suggests: lz4, cpio
 Description: Installs systemd-boot and kernels to ESP, signed for secure boot
- jak-systemd-secure-boot manages kernels and systemd-boot on a secure boot
+ sicherboot manages kernels and systemd-boot on a secure boot
  machine. It installs kernels and systemd-boot, generates signing keys to
  enroll in the machine,  and signs the kernels and the bootloader with it.
  .

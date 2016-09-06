@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# jak-systemd-secure-boot file. Installed as dracut to work around missing
+# sicherboot file. Installed as dracut to work around missing
 # hook support in dracut...
 
 set -e
@@ -10,6 +10,6 @@ if [ -e /etc/kernel/postinst.d/dracut.SecureBoot ]; then
     /etc/kernel/postinst.d/dracut.SecureBoot
 fi
 
-echo "jak-secure-systemd-boot: Installing $1 to ESP"
+echo "sicherboot: Installing $1 to ESP"
 
-jak-sb install-kernel "$1"
+sicherboot install-kernel "$1"

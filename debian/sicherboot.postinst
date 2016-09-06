@@ -1,0 +1,11 @@
+#!/bin/sh
+# postinst script for sicherboot
+
+set -e
+
+if [ "$1" = "triggered" ] ; then
+    sicherboot bootctl update || :
+fi
+
+
+#DEBHELPER#

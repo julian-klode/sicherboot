@@ -26,11 +26,11 @@ Integrating with your package management
 ----------------------------------------
 You want to run:
 
-* jak-sb bootctl update
+* sicherboot bootctl update
   - whenever systemd is upgraded or installed
-* jak-sb install-kernel <ver>
+* sicherboot install-kernel <ver>
   - when the kernel is installed and the initramfs was built
-* jak-sb remove-kernel <ver>
+* sicherboot remove-kernel <ver>
   - when the kernel shall be removed
 
 As an example, kernel and initramfs contain integration with /etc/kernel

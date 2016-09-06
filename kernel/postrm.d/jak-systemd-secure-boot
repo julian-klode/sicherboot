@@ -1,3 +1,0 @@
-#!/bin/sh
-
-jak-sb remove-kernel "$1"

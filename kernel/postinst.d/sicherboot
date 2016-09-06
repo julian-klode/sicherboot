@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+
+echo "sicherboot: Installing $1 to ESP"
+
+sicherboot install-kernel "$1"
