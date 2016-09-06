@@ -22,7 +22,7 @@
 
 . /etc/os-release
 
-KEY_HOME=/var/lib/jak-systemd-secure-boot/keys
+KEY_HOME="/etc/sicherboot/keys"
 BOOT_DIR="/boot/"
 BOOT_EFI_DIR="/boot/efi"
 MACHINE_ID="$(cat /etc/machine-id)"
@@ -37,8 +37,8 @@ for EFI_ARCH in "x64" "aa64" "aarch64" "ia32"; do
     fi
 done
 
-if [ -e /etc/sicherboot.conf ]; then
-    . /etc/sicherboot.conf
+if [ -e /etc/sicherboot/sicherboot.conf ]; then
+    . /etc/sicherboot/sicherboot.conf
 fi
 
 set -e

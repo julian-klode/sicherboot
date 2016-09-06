@@ -9,7 +9,7 @@ SECURITY
 --------
 The signing keys are stored unencrypted and only protected by the file system
 permissions. Thus, you should make sure that the file system they are
-stored (usually `/var`) in is encrypted.
+stored (usually `/etc`) in is encrypted.
 
 Setup
 ------------

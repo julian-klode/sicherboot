@@ -14,5 +14,6 @@ clean:
 	$(RM) -f sicherboot.conf sicherboot.conf.tmp
 
 install: all
-	install -D -o root -g root -m644 sicherboot.conf $(DESTDIR)/etc/sicherboot.conf
+	install -D -o root -g root -m644 sicherboot.conf $(DESTDIR)/etc/sicherboot/sicherboot.conf
+	install -d -o root -g root -m700 $(DESTDIR)/etc/sicherboot/keys
 	install -D -o root -g root -m755 sicherboot $(DESTDIR)$(PREFIX)/sbin/sicherboot
