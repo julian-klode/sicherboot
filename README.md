@@ -21,13 +21,11 @@ Then run
 
   sicherboot enroll-keys
   sicherboot install-kernel
+  sicherboot bootctl install
 
-to generate and enroll the keys (generation will be skipped) and install
-the currently running kernel to the ESP. Future kernels will be installed
-automatically.
-
--------------
-Kernel commandline can be placed in `/etc/kernel/cmdline`.
+to generate and enroll the keys (generation will be skipped), install
+the currently running kernel to the ESP (future kernels will be installed
+automatically), and finally install the bootloader.
 
 Limitations
 -----------
