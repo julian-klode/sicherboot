@@ -1,0 +1,6 @@
+/sicherboot.conf
+/debian/sicherboot
+/debian/sicherboot.substvars
+/debian/sicherboot.debhelper.log
+/debian/debhelper-*
+/debian/files
