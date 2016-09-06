@@ -99,7 +99,7 @@ _create_loader_entry() {
     echo "machine-id $MACHINE_ID" >> "$conf"
     echo "version $version" >> "$conf"
     echo "options $cmdline" >> "$conf"
-    echo "linux $image" >> "$conf"
+    echo "linux /$image" >> "$conf"
 }
 
 INSTALL_KERNEL_HELP="Usage: sicherboot install-kernel [<version>]
@@ -109,11 +109,13 @@ INSTALL_KERNEL_HELP="Usage: sicherboot install-kernel [<version>]
 "
 install_kernel() {
     local version="${1:-$(uname -r)}"
-    local image_dir="$BOOT_EFI_DIR/$MACHINE_ID/$version"
+    local relative_image_dir="$MACHINE_ID/$version"
+    local image_dir="$BOOT_EFI_DIR/$relative_image_dir"
+    local relative_image="$relative_image_dir/linux.efi"
     local image="$image_dir/linux.efi"
     local conf="$BOOT_EFI_DIR/loader/entries/$MACHINE_ID-$version.conf"
 
-    _create_loader_entry  "$conf" "$image" "$version"
+    _create_loader_entry  "$conf" "$relative_image" "$version"
     [ -d "$image_dir" ] || mkdir -p "$image_dir"
     build_image "$BOOT_DIR/vmlinuz-$version" \
                 "$BOOT_DIR/initrd.img-$version" \
