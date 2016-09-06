@@ -1,5 +1,7 @@
 PREFIX ?= /usr
 
+all: sicherboot.conf sicherboot.1
+
 sicherboot.conf: sicherboot.conf.in sicherboot
 	cp sicherboot.conf.in sicherboot.conf.tmp
 	 set -e; for var in `grep -o "^[A-Z][A-Z_]*=$$" sicherboot.conf.in | sort -u`; do \
@@ -9,8 +11,6 @@ sicherboot.conf: sicherboot.conf.in sicherboot
 
 sicherboot.1: sicherboot.1.md
 	pandoc -s -t man sicherboot.1.md  -o sicherboot.1
-
-all: sicherboot.conf sicherboot.1
 
 clean:
 	$(RM) -f sicherboot.conf sicherboot.conf.tmp sicherboot.1
