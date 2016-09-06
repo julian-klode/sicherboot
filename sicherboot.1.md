@@ -26,7 +26,6 @@ to perform the initial installation.
 
 sicherboot setup
 :   Performs the initial installation of sicherboot to the ESP.
-
     This basically runs `enroll-keys`, `install-kernel`, `bootctl install`,
     asking before each step.
 
