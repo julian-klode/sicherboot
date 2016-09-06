@@ -7,7 +7,7 @@ set -e
 
 # Run the real dracut first if it exists
 if [ -e /etc/kernel/postinst.d/dracut.SecureBoot ]; then
-    /etc/kernel/postinst.d/dracut.SecureBoot
+    /etc/kernel/postinst.d/dracut.SecureBoot "$@"
 fi
 
 echo "sicherboot: Installing $1 to ESP"
