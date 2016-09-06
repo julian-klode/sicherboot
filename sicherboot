@@ -26,7 +26,14 @@ KEY_HOME=/var/lib/jak-systemd-secure-boot/keys
 BOOT_DIR="/boot/"
 BOOT_EFI_DIR="/boot/efi"
 MACHINE_ID="$(cat /etc/machine-id)"
-KEYTOOL=/usr/lib/efitools/x86_64-linux-gnu/KeyTool.efi
+KEYTOOL=/usr/lib/efitools/*/KeyTool.efi
+
+# Discover EFI architecture
+for EFI_ARCH in "x64" "aa64" "aarch64" "ia32"; do
+    if [ -e /usr/lib/systemd/boot/efi/linux${EFI_ARCH}.efi.stub ]; then
+        break
+    fi
+done
 
 set -e
 
@@ -45,7 +52,7 @@ build_image() {
     local initramfs_image="$2"
     local combined_image="$3"
     local cmdline="${4:-/etc/kernel/cmdline}"
-    local efistub="/usr/lib/systemd/boot/efi/linuxx64.efi.stub"
+    local efistub="/usr/lib/systemd/boot/efi/linux${EFI_ARCH}.efi.stub"
 
 
     objcopy \
@@ -126,11 +133,11 @@ remove_kernel() {
 BOOTCTL_HELP="Usage: sicherboot bootctl [<argument> ...]
 
   Run bootctl with the given arguments and afterwards sign the
-  systemd-bootx64.efi
+  systemd-boot${EFI_ARCH}.efi
 "
 bootctl() {
     command bootctl --path="$BOOT_EFI_DIR" "$@"
-    sign_image "$BOOT_EFI_DIR/EFI/systemd/systemd-bootx64.efi"
+    sign_image "$BOOT_EFI_DIR/EFI/systemd/systemd-boot${EFI_ARCH}.efi"
 }
 
 ENROLL_KEYS_HELP="Usage: sicherboot enroll-keys

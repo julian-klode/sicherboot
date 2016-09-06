@@ -17,7 +17,6 @@ Kernel commandline can be placed in `/etc/kernel/cmdline`.
 
 Limitations
 -----------
-* Only amd64/x64/x86_64 is supported for now
 * Kernels and initramfs images must be named `/boot/vmlinuz-<ver>` and
   `/boot/initrd.img-<ver>`
 * Only a single ESP is supported which must be mounted in /boot/efi
