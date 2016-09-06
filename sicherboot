@@ -35,6 +35,10 @@ for EFI_ARCH in "x64" "aa64" "aarch64" "ia32"; do
     fi
 done
 
+if [ -e /etc/sicherboot.conf ]; then
+    . /etc/sicherboot.conf
+fi
+
 set -e
 
 BUILD_IMAGE_HELP="Usage: sicherboot build-image <kernel> <initramfs> <output> [<cmdline>]

@@ -19,7 +19,7 @@ Limitations
 -----------
 * Kernels and initramfs images must be named `/boot/vmlinuz-<ver>` and
   `/boot/initrd.img-<ver>`
-* Only a single ESP is supported which must be mounted in /boot/efi
+* Only a single ESP is supported
 * Key generation is not done yet.
 
 

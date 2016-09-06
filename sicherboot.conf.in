@@ -1,0 +1,20 @@
+# Sicherboot configuration file
+#
+# You can override values here.
+#
+# Related files:
+#
+# /etc/kernel/cmdline
+#    Place to store the kernel commandline
+
+# Classical boot directory where vmlinuz and initrd.img files can be found
+BOOT_DIR=
+
+# The mount point of the EFI system partition
+BOOT_EFI_DIR=
+
+# EFI Architecture name (automatically detected at run-time)
+#EFI_ARCH=
+
+# The location where keys should be stored in
+KEY_HOME=
