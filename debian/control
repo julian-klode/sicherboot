@@ -22,7 +22,7 @@ Description: systemd-boot integration with UEFI secure boot support
  see /etc/sicherboot/sicherboot.conf after installing.
  .
  This package diverts the /etc/kernel/postinst.d/dracut file and replace it
- with its own file that calls the diverted one and updates the ESP afterwards,
+ with its own file that calls the diverted one before running sicherboot,
  as dracut does not support any form of hooks. dpkg is not entirely happy
  with that and asks you if you want to replace a "deleted" dracut conffile -
  answer yes.
