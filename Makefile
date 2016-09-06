@@ -7,8 +7,10 @@ sicherboot.conf: sicherboot.conf.in sicherboot
 	done
 	mv sicherboot.conf.tmp sicherboot.conf
 
+sicherboot.1:
+	pandoc -s -t man sicherboot.1.md  -o sicherboot.1
 
-all: sicherboot.conf
+all: sicherboot.conf sicherboot.1
 
 clean:
 	$(RM) -f sicherboot.conf sicherboot.conf.tmp
