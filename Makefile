@@ -13,7 +13,7 @@ sicherboot.1: sicherboot.1.md
 all: sicherboot.conf sicherboot.1
 
 clean:
-	$(RM) -f sicherboot.conf sicherboot.conf.tmp
+	$(RM) -f sicherboot.conf sicherboot.conf.tmp sicherboot.1
 
 install: all
 	install -D -o root -g root -m644 sicherboot.conf $(DESTDIR)/etc/sicherboot/sicherboot.conf
