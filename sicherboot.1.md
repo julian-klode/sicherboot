@@ -62,3 +62,6 @@ sicherboot sign-image *EXECUTABLE*
 
 `/etc/sicherboot/keys`
 : The default key storage location
+
+`/etc/kernel/cmdline`
+: Kernel command line configuration file
