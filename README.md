@@ -19,13 +19,9 @@ After installing sicherboot, you can adjust a number of settings in
 
 Then run
 
-  sicherboot enroll-keys
-  sicherboot install-kernel
-  sicherboot bootctl install
+  sicherboot setup
 
-to generate and enroll the keys (generation will be skipped), install
-the currently running kernel to the ESP (future kernels will be installed
-automatically), and finally install the bootloader.
+to get started.
 
 Limitations
 -----------

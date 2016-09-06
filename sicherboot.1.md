@@ -16,6 +16,20 @@ sicherboot manages the systemd-boot bootloader and kernels in an EFI
 System Partition (ESP). It stores a set of keys in `/etc/sicherboot/keys`
 to sign the binaries for use with secure boot.
 
+# INITIAL SETUP
+
+After installation of sicherboot, setup `/etc/kernel/cmdline` and perhaps
+change some options in `/etc/sicherboot/sicherboot.conf` to your liking.
+
+Once you have configured sicherboot as you want, run `sicherboot setup`
+to perform the initial installation.
+
+sicherboot setup
+:   Performs the initial installation of sicherboot to the ESP.
+
+    This basically runs `enroll-keys`, `install-kernel`, `bootctl install`,
+    asking before each step.
+
 # KEY MANAGEMENT
 
 sicherboot generate-keys

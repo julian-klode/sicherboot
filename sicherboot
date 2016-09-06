@@ -43,6 +43,20 @@ fi
 
 set -e
 
+_read_yes_no() {
+    printf "%b [y/n]:" "$*" >&2
+    while true; do
+        read answer
+        case "$answer" in
+            "y"|"Y"|"yes")
+                return 0;;
+            "n"|"N"|"no")
+                return 1;;
+        esac
+    done
+    return 99
+}
+
 BUILD_IMAGE_HELP="Usage: sicherboot build-image <kernel> <initramfs> <output> [<cmdline>]
 
   Combine the kernel image, the initramfs image, and an optional cmdline
@@ -183,10 +197,25 @@ generate_keys() {
     _generate_key db KEK
 }
 
+_copy_keys() {
+    local key_dir="$1"
+    mkdir -p "$key_dir"
+    cp "$KEY_HOME/db.auth" "$key_dir"
+    cp "$KEY_HOME/KEK.auth" "$key_dir"
+    cp "$KEY_HOME/PK.auth" "$key_dir"
+    cp "$KEY_HOME/db.cer" "$key_dir"
+    cp "$KEY_HOME/KEK.cer" "$key_dir"
+    cp "$KEY_HOME/db.esl" "$key_dir"
+    cp "$KEY_HOME/KEK.esl" "$key_dir"
+
+    echo "Installed signed key files into the $key_dir_rel directory in the ESP."
+}
+
 ENROLL_KEYS_HELP="Usage: sicherboot enroll-keys
 
   Install signed db, KEK, and PK (self-signed) keys into your ESP, together
-  with KeyTool, so you can easily flash the new key."
+  with KeyTool, so you can easily flash the new key.
+"
 enroll_keys() {
     local image="$BOOT_EFI_DIR/$MACHINE_ID/KeyTool.efi"
     local conf="$BOOT_EFI_DIR/loader/entries/$MACHINE_ID-keytool.conf"
@@ -194,32 +223,19 @@ enroll_keys() {
     local key_dir="$BOOT_EFI_DIR/$key_dir_rel"
 
     if [ -e "$KEY_HOME/db.auth" -a -e "$KEY_HOME/KEK.auth" -a -e "$KEY_HOME/PK.auth" ]; then
-        mkdir -p "$key_dir"
-        cp "$KEY_HOME/db.auth" "$key_dir"
-        cp "$KEY_HOME/KEK.auth" "$key_dir"
-        cp "$KEY_HOME/PK.auth" "$key_dir"
-        cp "$KEY_HOME/db.cer" "$key_dir"
-        cp "$KEY_HOME/KEK.cer" "$key_dir"
-        cp "$KEY_HOME/db.esl" "$key_dir"
-        cp "$KEY_HOME/KEK.esl" "$key_dir"
-
-        echo "Installed signed key files into the $key_dir_rel directory in the ESP."
+        _copy_keys "$key_dir"
     else
         echo "Error: Cannot find signed key files. " >&2
         echo "The key storage directory ${KEY_HOME} contains:" >&2
         ls -l ${KEY_HOME}/ >&2 || true
-        printf "%b" "Do you want to run generate-keys? [y/n]:" >&2
-        while true; do
-            read answer
-            case "$answer" in
-                "y"|"Y"|"yes")
-                    SICHERBOOT_FORCE_KEYGEN=true generate_keys
-                    break;;
-                "n"|"N"|"no")
-                    return 1;;
-            esac
-        done
-        return 1
+        if _read_yes_no "Do you want to run generate-keys?"; then
+            SICHERBOOT_FORCE_KEYGEN=true generate_keys
+            _copy_keys "$key_dir"
+        else
+            if ! _read_yes_no "Do you want to continue installing KeyTool?"; then
+                return 0
+            fi
+        fi
     fi
 
     cp "$KEYTOOL" "$image"
@@ -254,6 +270,24 @@ enroll_keys() {
     echo "way, as anyone could just remove the key again by flashing rm_PK.auth"
 }
 
+SETUP_HELP="setup
+
+  Perform initial setup.
+  This generates keys, enrolls them (or rather prepares enrollment), and
+  installs the running kernel and systemd-boot to ${BOOT_EFI_DIR}.
+"
+setup() {
+    if _read_yes_no "Enroll keys to ${BOOT_EFI_DIR}?"; then
+        enroll_keys
+    fi
+    if _read_yes_no "Install running kernel to ${BOOT_EFI_DIR}?"; then
+        install_kernel
+    fi
+    if _read_yes_no "Install systemd-boot to ${BOOT_EFI_DIR}?"; then
+        bootctl install
+    fi
+}
+
 help() {
     [ -n "$1" -a "$1" != "build-image"  ] || printf "%b\n" "$BUILD_IMAGE_HELP"
     [ -n "$1" -a "$1" != "sign-image"  ] || printf "%b\n" "$SIGN_IMAGE_HELP"
@@ -262,6 +296,7 @@ help() {
     [ -n "$1" -a "$1" != "bootctl"  ] || printf "%b\n" "$BOOTCTL_HELP"
     [ -n "$1" -a "$1" != "generate-keys"  ] || printf "%b\n" "$GENERATE_KEYS_HELP"
     [ -n "$1" -a "$1" != "enroll-keys"  ] || printf "%b\n" "$ENROLL_KEYS_HELP"
+    [ -n "$1" -a "$1" != "setup"  ] || printf "%b" "$SETUP_HELP"
 }
 
 
@@ -294,6 +329,8 @@ case "$command" in
         generate_keys "$@" ;;
     "enroll-keys")
         enroll_keys "$@" ;;
+    "setup")
+        setup "$@";;
     *)
         echo "sicherboot - Secure boot and bootloader management stuff" >&2
         echo >&2
