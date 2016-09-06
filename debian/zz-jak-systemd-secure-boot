@@ -1,0 +1,10 @@
+#!/bin/sh
+case "$DPKG_MAINTSCRIPT_PACKAGE" in
+    linux-image-*)
+        # will be run by the kernel hooks later on
+        exit 0
+        ;;
+    *)
+        jak-sb install-kernel "$1"
+        ;;
+esac
