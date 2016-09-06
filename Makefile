@@ -1,6 +1,6 @@
 PREFIX ?= /usr
 
-all: sicherboot.conf sicherboot.1
+all: sicherboot.conf sicherboot.8
 
 sicherboot.conf: sicherboot.conf.in sicherboot
 	cp sicherboot.conf.in sicherboot.conf.tmp
@@ -9,11 +9,11 @@ sicherboot.conf: sicherboot.conf.in sicherboot
 	done
 	mv sicherboot.conf.tmp sicherboot.conf
 
-sicherboot.1: sicherboot.1.md
-	pandoc -s -t man sicherboot.1.md  -o sicherboot.1
+sicherboot.8: sicherboot.8.md
+	pandoc -s -t man sicherboot.8.md  -o sicherboot.8
 
 clean:
-	$(RM) -f sicherboot.conf sicherboot.conf.tmp sicherboot.1
+	$(RM) -f sicherboot.conf sicherboot.conf.tmp sicherboot.8
 
 install: all
 	install -D -o root -g root -m644 sicherboot.conf $(DESTDIR)/etc/sicherboot/sicherboot.conf
