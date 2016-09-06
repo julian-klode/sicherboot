@@ -26,7 +26,9 @@ KEY_HOME=/var/lib/jak-systemd-secure-boot/keys
 BOOT_DIR="/boot/"
 BOOT_EFI_DIR="/boot/efi"
 MACHINE_ID="$(cat /etc/machine-id)"
-KEYTOOL=/usr/lib/efitools/*/KeyTool.efi
+KEYTOOL=$(echo /usr/lib/efitools/*/KeyTool.efi)
+KEY_CN="${MACHINE_ID}"
+OPENSSL_ARGS="-newkey rsa:2048 -nodes -sha256"
 
 # Discover EFI architecture
 for EFI_ARCH in "x64" "aa64" "aarch64" "ia32"; do
@@ -144,6 +146,41 @@ bootctl() {
     sign_image "$BOOT_EFI_DIR/EFI/systemd/systemd-boot${EFI_ARCH}.efi"
 }
 
+
+GENERATE_KEYS_HELP="Usage: sicherboot generate-keys
+
+  Generate the keys in ${KEY_HOME}. This has no effect in case a db.key and
+  a db.crt already exists in there.
+"
+_generate_key() {
+    local key_fun="$1"
+    local signer="$2"
+    openssl req -new -x509 $OPENSSL_ARGS \
+                -keyout "${key_fun}.key" \
+                -out "${key_fun}.crt" \
+                -subj "/CN=${KEY_CN} ${key_fun}/"
+    openssl x509 -in "${key_fun}.crt" \
+                 -out "${key_fun}.cer" -outform DER
+
+    cert-to-efi-sig-list -g $(cat "uuid") ${key_fun}.crt ${key_fun}.esl
+    sign-efi-sig-list -k "${signer}.key" -c "${signer}.crt" "${key_fun}" "${key_fun}.esl" "${key_fun}.auth"
+}
+
+generate_keys() {
+    if [ -e "${KEY_HOME}/db.key" -a -e "${KEY_HOME}/db.crt" -a -z "$SICHERBOOT_FORCE_KEYGEN" ]; then
+        echo "Found db.key, skipping key generation."
+        return 0
+    fi
+    [ -e "${KEY_HOME}" ] || mkdir "${KEY_HOME}"
+    chown root:root "${KEY_HOME}"
+    chmod 700 "${KEY_HOME}"
+    cd "${KEY_HOME}"
+    uuidgen > "${KEY_HOME}/uuid"
+    _generate_key PK PK
+    _generate_key KEK PK
+    _generate_key db KEK
+}
+
 ENROLL_KEYS_HELP="Usage: sicherboot enroll-keys
 
   Install signed db, KEK, and PK (self-signed) keys into your ESP, together
@@ -154,12 +191,34 @@ enroll_keys() {
     local key_dir_rel="Keys/$MACHINE_ID"
     local key_dir="$BOOT_EFI_DIR/$key_dir_rel"
 
-    mkdir -p "$key_dir"
-    #cp "$KEY_HOME/db.auth" "$key_dir"
-    #cp "$KEY_HOME/KEK.auth" "$key_dir"
-    #cp "$KEY_HOME/PEM.auth" "$key_dir"
+    if [ -e "$KEY_HOME/db.auth" -a -e "$KEY_HOME/KEK.auth" -a -e "$KEY_HOME/PK.auth" ]; then
+        mkdir -p "$key_dir"
+        cp "$KEY_HOME/db.auth" "$key_dir"
+        cp "$KEY_HOME/KEK.auth" "$key_dir"
+        cp "$KEY_HOME/PK.auth" "$key_dir"
+        cp "$KEY_HOME/db.cer" "$key_dir"
+        cp "$KEY_HOME/KEK.cer" "$key_dir"
+        cp "$KEY_HOME/db.esl" "$key_dir"
+        cp "$KEY_HOME/KEK.esl" "$key_dir"
 
-    echo "Installed signed key files into the $key_dir_rel directory in the ESP."
+        echo "Installed signed key files into the $key_dir_rel directory in the ESP."
+    else
+        echo "Error: Cannot find signed key files. " >&2
+        echo "The key storage directory ${KEY_HOME} contains:" >&2
+        ls -l ${KEY_HOME}/ >&2 || true
+        printf "%b" "Do you want to run generate-keys? [y/n]:" >&2
+        while true; do
+            read answer
+            case "$answer" in
+                "y"|"Y"|"yes")
+                    SICHERBOOT_FORCE_KEYGEN=true generate_keys
+                    break;;
+                "n"|"N"|"no")
+                    return 1;;
+            esac
+        done
+        return 1
+    fi
 
     cp "$KEYTOOL" "$image"
     sign_image "$image"
@@ -177,6 +236,8 @@ enroll_keys() {
     echo "  (2) KEK (key exchange key, signed by PK)"
     echo "  (3) PK (platform key, self signed)"
     echo
+    echo "Prefer .auth over .esl over .cer"
+    echo
     echo "Once your PK key has been replaced, your system is put into user"
     echo "mode (you might need to reboot for it to take effect). From then"
     echo "on, all key changes and binaries need to be signed by the parent"
@@ -192,12 +253,13 @@ enroll_keys() {
 }
 
 help() {
-    printf "%b\n" "$BUILD_IMAGE_HELP" 
-    printf "%b\n" "$SIGN_IMAGE_HELP"
-    printf "%b\n" "$INSTALL_KERNEL_HELP"
-    printf "%b\n" "$REMOVE_KERNEL_HELP"
-    printf "%b\n" "$BOOTCTL_HELP"
-    printf "%b\n" "$ENROLL_KEYS_HELP"
+    [ -n "$1" -a "$1" != "build-image"  ] || printf "%b\n" "$BUILD_IMAGE_HELP"
+    [ -n "$1" -a "$1" != "sign-image"  ] || printf "%b\n" "$SIGN_IMAGE_HELP"
+    [ -n "$1" -a "$1" != "install-kernel"  ] || printf "%b\n" "$INSTALL_KERNEL_HELP"
+    [ -n "$1" -a "$1" != "remove-kernel"  ] || printf "%b\n" "$REMOVE_KERNEL_HELP"
+    [ -n "$1" -a "$1" != "bootctl"  ] || printf "%b\n" "$BOOTCTL_HELP"
+    [ -n "$1" -a "$1" != "generate-keys"  ] || printf "%b\n" "$GENERATE_KEYS_HELP"
+    [ -n "$1" -a "$1" != "enroll-keys"  ] || printf "%b\n" "$ENROLL_KEYS_HELP"
 }
 
 
@@ -224,8 +286,10 @@ case "$command" in
     "--help"|"help"|"-h")
         echo "sicherboot - Secure boot and bootloader management stuff"
         echo
-        help 
+        help "$@"
         ;;
+    "generate-keys")
+        generate_keys "$@" ;;
     "enroll-keys")
         enroll_keys "$@" ;;
     *)

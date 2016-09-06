@@ -16,5 +16,17 @@ BOOT_EFI_DIR=
 # EFI Architecture name (automatically detected at run-time)
 #EFI_ARCH=
 
+# Key Common Name
+KEY_CN=
+
 # The location where keys should be stored in
 KEY_HOME=
+
+# OpenSSL arguments for key generations. Here you can specify custom settings.
+#
+# By default, -nodes is specified, so the key is not encrypted, and is thus
+# only safe is KEY_HOME above is located on an encrypted file system. If you
+# want to encrypt your keys, you can do so, but it might cause some trouble
+# when sicherboot is run automatically during package upgrades, in case there
+# is no terminal.
+OPENSSL_ARGS=

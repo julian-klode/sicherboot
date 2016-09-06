@@ -11,7 +11,21 @@ The signing keys are stored unencrypted and only protected by the file system
 permissions. Thus, you should make sure that the file system they are
 stored (usually `/var`) in is encrypted.
 
-Configuration
+Setup
+------------
+After installing sicherboot, you can adjust a number of settings in
+`/etc/sicherboot.conf` and should set a kernel commandline in
+`/etc/kernel/cmdline`.
+
+Then run
+
+  sicherboot enroll-keys
+  sicherboot install-kernel
+
+to generate and enroll the keys (generation will be skipped) and install
+the currently running kernel to the ESP. Future kernels will be installed
+automatically.
+
 -------------
 Kernel commandline can be placed in `/etc/kernel/cmdline`.
 
@@ -19,8 +33,7 @@ Limitations
 -----------
 * Kernels and initramfs images must be named `/boot/vmlinuz-<ver>` and
   `/boot/initrd.img-<ver>`
-* Only a single ESP is supported
-* Key generation is not done yet.
+* Only a single ESP is supported.
 
 
 Integrating with your package management
