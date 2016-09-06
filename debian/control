@@ -11,19 +11,18 @@ Vcs-Browser: https://github.com/julian-klode/sicherboot
 Package: sicherboot
 Architecture: all
 Depends: ${misc:Depends}, ${shlibs:Depends}, efitools, binutils, systemd
-Recommends: dracut
-Suggests: lz4, cpio
-Description: Installs systemd-boot and kernels to ESP, signed for secure boot
- sicherboot manages kernels and systemd-boot on a secure boot
+Enhances: dracut, systemd, initramfs-tool
+Description: systemd-boot integration with UEFI secure boot support
+ sicher*boot manages kernels and systemd-boot on a secure boot
  machine. It installs kernels and systemd-boot, generates signing keys to
  enroll in the machine,  and signs the kernels and the bootloader with it.
  .
- The keys used to sign the UEFI binaries are located in /var/lib. If /var/lib
- is not encrypted, the whole setup is unsafe: One of the files generated is
- rm_PK.auth, which, when written to UEFI, reverts the system to setup mode
- where no checks are performed.
+ Keys are generated in /etc/sicherboot/keys, readable only to root. The private
+ keys are unencrypted in the default configuration, but that can be changed,
+ see /etc/sicherboot/sicherboot.conf after installing.
  .
- Currently, the package only supports amd64 architecture. It also has to
- divert the /etc/kernel/postinst.d/dracut file and replace it with its
- own file that calls the diverted one and updates the ESP afterwards, as
- dracut does not support any form of hooks.
+ This package diverts the /etc/kernel/postinst.d/dracut file and replace it
+ with its own file that calls the diverted one and updates the ESP afterwards,
+ as dracut does not support any form of hooks. dpkg is not entirely happy
+ with that and asks you if you want to replace a "deleted" dracut conffile -
+ answer yes.
