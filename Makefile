@@ -1,6 +1,6 @@
 PREFIX ?= /usr
 
-sicherboot.conf: sicherboot.conf.in
+sicherboot.conf: sicherboot.conf.in sicherboot
 	cp sicherboot.conf.in sicherboot.conf.tmp
 	 set -e; for var in `grep -o "^[A-Z][A-Z_]*=$$" sicherboot.conf.in | sort -u`; do \
 		sed -i "s@^$$var@#`grep ^$$var sicherboot`@g" sicherboot.conf.tmp; \
