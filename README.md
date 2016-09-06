@@ -24,6 +24,15 @@ Limitations
 
 Integrating with your package management
 ----------------------------------------
-See the debian/ packaging for an example. Basically, whenever the systemd-boot
-file is updated, run jak-sb bootctl update. And whenever is dracut invoked
-in some way to build an initramfs, run jak-sb install-kernel afterwards.
+You want to run:
+
+* jak-sb bootctl update
+  - whenever systemd is upgraded or installed
+* jak-sb install-kernel <ver>
+  - when the kernel is installed and the initramfs was built
+* jak-sb remove-kernel <ver>
+  - when the kernel shall be removed
+
+As an example, kernel and initramfs contain integration with /etc/kernel
+and initramfs-tools. Install one of the kernel postinst.d scripts - the dracut
+one exists for dracut systems as a work around for dracut not supporting hooks.

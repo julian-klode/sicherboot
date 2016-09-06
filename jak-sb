@@ -96,14 +96,31 @@ INSTALL_KERNEL_HELP="Usage: jak-sb install-kernel [<version>]
 "
 install_kernel() {
     local version="${1:-$(uname -r)}"
-    local image="$BOOT_EFI_DIR/$MACHINE_ID/$version/linux.efi"
+    local image_dir="$BOOT_EFI_DIR/$MACHINE_ID/$version"
+    local image="$image_dir/linux.efi"
     local conf="$BOOT_EFI_DIR/loader/entries/$MACHINE_ID-$version.conf"
 
     _create_loader_entry  "$conf" "$image" "$version"
+    [ -d "$image_dir" ] || mkdir -p "$image_dir"
     build_image "$BOOT_DIR/vmlinuz-$version" \
                 "$BOOT_DIR/initrd.img-$version" \
                 "$image"
     sign_image "$image"
+}
+
+REMOVE_KERNEL_HELP="Usage: jak-sb remove-kernel [<version>]
+
+  Removes a kernel from the ESP.
+"""
+remove_kernel() {
+    local version="${1:-$(uname -r)}"
+    local image_dir="$BOOT_EFI_DIR/$MACHINE_ID/$version"
+    local image="$image_dir/linux.efi"
+    local conf="$BOOT_EFI_DIR/loader/entries/$MACHINE_ID-$version.conf"
+
+    rm "$conf"
+    rm "$image"
+    rmdir "$image_dir" || true
 }
 
 BOOTCTL_HELP="Usage: jak-sb bootctl [<argument> ...]
@@ -167,6 +184,7 @@ help() {
     printf "%b\n" "$BUILD_IMAGE_HELP" 
     printf "%b\n" "$SIGN_IMAGE_HELP"
     printf "%b\n" "$INSTALL_KERNEL_HELP"
+    printf "%b\n" "$REMOVE_KERNEL_HELP"
     printf "%b\n" "$BOOTCTL_HELP"
     printf "%b\n" "$ENROLL_KEYS_HELP"
 }
@@ -188,6 +206,8 @@ case "$command" in
         sign_image "$@";;
     "install-kernel")
         install_kernel "$@";;
+    "remove-kernel")
+        remove_kernel "$@";;
     "bootctl")
         bootctl "$@";;
     "--help"|"help"|"-h")

@@ -1,2 +1,3 @@
-debian/dracut etc/kernel/postinst.d
-debian/zz-jak-systemd-secure-boot etc/initramfs/post-update.d
+kernel/postinst.d/dracut etc/kernel/postinst.d
+kernel/postrm.d/* etc/kernel/postrm.d/
+initramfs/post-update.d/* etc/initramfs/post-update.d
