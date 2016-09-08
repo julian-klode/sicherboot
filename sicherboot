@@ -217,7 +217,8 @@ ENROLL_KEYS_HELP="Usage: sicherboot enroll-keys
   with KeyTool, so you can easily flash the new key.
 "
 enroll_keys() {
-    local image="$BOOT_EFI_DIR/$MACHINE_ID/KeyTool.efi"
+    local relative_image="$MACHINE_ID/KeyTool.efi"
+    local image="$BOOT_EFI_DIR/$relative_image"
     local conf="$BOOT_EFI_DIR/loader/entries/$MACHINE_ID-keytool.conf"
     local key_dir_rel="Keys/$MACHINE_ID"
     local key_dir="$BOOT_EFI_DIR/$key_dir_rel"
@@ -242,8 +243,7 @@ enroll_keys() {
     sign_image "$image"
 
     echo "title UEFI Key Setup Tool" > "$conf"
-    echo "machine-id $MACHINE_ID" >> "$conf"
-    echo "efi $image" >> "$conf"
+    echo "efi $relative_image" >> "$conf"
 
     echo "Installed KeyTool into the ESP."
     echo
