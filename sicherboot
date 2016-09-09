@@ -129,10 +129,12 @@ install_kernel() {
     local image_dir="$BOOT_EFI_DIR/$relative_image_dir"
     local relative_image="$relative_image_dir/linux.efi"
     local image="$image_dir/linux.efi"
-    local conf="$BOOT_EFI_DIR/loader/entries/$MACHINE_ID-$version.conf"
+    local conf_dir="$BOOT_EFI_DIR/loader/entries"
+    local conf="$conf_dir/$MACHINE_ID-$version.conf"
 
+    mkdir -p "$conf_dir"
+    mkdir -p "$image_dir"
     _create_loader_entry  "$conf" "$relative_image" "$version"
-    [ -d "$image_dir" ] || mkdir -p "$image_dir"
     build_image "$BOOT_DIR/vmlinuz-$version" \
                 "$BOOT_DIR/initrd.img-$version" \
                 "$image"
@@ -220,8 +222,10 @@ ENROLL_KEYS_HELP="Usage: sicherboot enroll-keys
 "
 enroll_keys() {
     local relative_image="$MACHINE_ID/KeyTool.efi"
+    local image_dir="$BOOT_EFI_DIR/$MACHINE_ID"
     local image="$BOOT_EFI_DIR/$relative_image"
-    local conf="$BOOT_EFI_DIR/loader/entries/$MACHINE_ID-keytool.conf"
+    local conf_dir="$BOOT_EFI_DIR/loader/entries"
+    local conf="$conf_dir/$MACHINE_ID-keytool.conf"
     local key_dir_rel="Keys/$MACHINE_ID"
     local key_dir="$BOOT_EFI_DIR/$key_dir_rel"
 
@@ -240,6 +244,9 @@ enroll_keys() {
             fi
         fi
     fi
+
+    mkdir -p "$image_dir"
+    mkdir -p "$conf_dir"
 
     cp "$KEYTOOL" "$image"
     sign_image "$image"

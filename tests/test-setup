@@ -1,0 +1,95 @@
+#!/bin/sh -e
+set -e
+
+cd "$(dirname "$(readlink -f "$0")")"
+
+testsuccess() {
+    printf "%-90s" "Testing $*..."
+    printf "=====================================================\n" >> $PWD/tmp/out.log
+    printf " Output of command $*\n"                                 >> $PWD/tmp/out.log
+    printf "=====================================================\n" >> $PWD/tmp/out.log
+    if ! "$@" >>$PWD/tmp/out.log 2>&1; then
+        printf "FAIL\n"
+        printf "Output so far:\n" >&2
+        cat $PWD/tmp/out.log
+        exit 1
+    else
+        printf "PASS\n"
+    fi
+}
+
+export SICHERBOOT_CONFIGURATION_FILE_INTERNAL=$PWD/sicherboot.conf
+export PATH="$PWD/tmp:$PATH"
+
+if test -e tmp; then
+    rm -rf tmp
+fi
+
+
+mkdir tmp
+
+######################### TEST KEY GENERATION ##############################
+testsuccess fakeroot ../sicherboot generate-keys
+
+. tmp/config
+
+testsuccess test -e tmp/keys/PK.auth
+testsuccess test -e tmp/keys/db.auth
+testsuccess test -e tmp/keys/KEK.auth
+
+######################### TEST KEY ENROLLMENT ###############################
+
+testsuccess fakeroot ../sicherboot enroll-keys
+
+testsuccess sbverify --cert tmp/keys/db.crt tmp/efi/machine-id/KeyTool.efi
+testsuccess test -e tmp/efi/loader/entries/machine-id-keytool.conf
+
+############################# TEST BOOTLOADER INSTALLATION ##################
+
+# Mock bootctl
+cat >> $PWD/tmp/bootctl << EOF
+#!/bin/sh
+install -D /usr/lib/systemd/boot/efi/systemd-boot${EFI_ARCH}.efi $PWD/tmp/efi/EFI/systemd/systemd-boot${EFI_ARCH}.efi
+EOF
+
+chmod +x $PWD/tmp/bootctl
+
+testsuccess fakeroot ../sicherboot bootctl install
+testsuccess test -e tmp/efi/EFI/systemd/systemd-boot${EFI_ARCH}.efi
+testsuccess sbverify --cert tmp/keys/db.crt tmp/efi/EFI/systemd/systemd-boot${EFI_ARCH}.efi
+
+
+############################## TEST KERNEL INSTALLATION ######################
+cp /usr/lib/systemd/boot/efi/linux${EFI_ARCH}.efi.stub tmp/vmlinuz-kernel-version
+touch tmp/initrd.img-kernel-version
+
+testsuccess fakeroot ../sicherboot install-kernel kernel-version
+testsuccess test -e tmp/efi/machine-id/kernel-version/linux.efi
+testsuccess test -e tmp/efi/loader/entries/machine-id-kernel-version.conf
+
+
+testsuccess sbverify --cert tmp/keys/db.crt tmp/efi/machine-id/kernel-version/linux.efi
+
+
+############################# TEST THE REAL SETUP COMMAND ######################
+
+# Mock uname
+cat >> $PWD/tmp/uname << EOF
+#!/bin/sh
+echo kernel-version
+EOF
+
+chmod +x $PWD/tmp/uname
+
+
+rm -r tmp/efi
+rm -r tmp/keys
+
+testsuccess test ! -e tmp/efi
+testsuccess test ! -e tmp/keys
+
+testsuccess sh -c 'yes | fakeroot ../sicherboot setup'
+
+testsuccess sbverify --cert tmp/keys/db.crt tmp/efi/EFI/systemd/systemd-boot${EFI_ARCH}.efi
+testsuccess sbverify --cert tmp/keys/db.crt tmp/efi/machine-id/kernel-version/linux.efi
+testsuccess test -e tmp/efi/loader/entries/machine-id-kernel-version.conf
