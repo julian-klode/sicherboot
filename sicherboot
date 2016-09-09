@@ -26,9 +26,14 @@ KEY_HOME="/etc/sicherboot/keys"
 BOOT_DIR="/boot/"
 BOOT_EFI_DIR="/boot/efi"
 MACHINE_ID="$(cat /etc/machine-id)"
-KEYTOOL=$(echo /usr/lib/efitools/*/KeyTool.efi)
 KEY_CN="${MACHINE_ID}"
 OPENSSL_ARGS="-newkey rsa:2048 -nodes -sha256"
+
+if [ -e /usr/lib/efitools/*/KeyTool.efi ]; then
+    KEYTOOL=$(echo /usr/lib/efitools/*/KeyTool.efi)
+elif [ -e /usr/share/efitools/efi/KeyTool.efi ]; then
+    KEYTOOL=/usr/share/efitools/efi/KeyTool.efi
+fi
 
 # Discover EFI architecture
 for EFI_ARCH in "x64" "aa64" "aarch64" "ia32"; do
@@ -228,6 +233,11 @@ enroll_keys() {
     local conf="$conf_dir/$MACHINE_ID-keytool.conf"
     local key_dir_rel="Keys/$MACHINE_ID"
     local key_dir="$BOOT_EFI_DIR/$key_dir_rel"
+
+    if [ ! -e "$KEYTOOL" ]; then
+        echo "ERROR: Cannot find KeyTool in /usr/{lib,share}/efitools" >&2
+        exit 1
+    fi
 
     if [ -e "$KEY_HOME/db.auth" -a -e "$KEY_HOME/KEK.auth" -a -e "$KEY_HOME/PK.auth" ]; then
         _copy_keys "$key_dir"
