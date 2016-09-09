@@ -5,6 +5,9 @@ sicher*boot automatically installs systemd-boot and kernels for it into the
 
  [ESP]: https://en.wikipedia.org/wiki/EFI_System_partition
 
+[![Run Status](https://api.shippable.com/projects/57d313eea0e0fc1000037262/badge?branch=master)](https://app.shippable.com/projects/57d313eea0e0fc1000037262)
+
+
 SECURITY
 --------
 The signing keys are stored unencrypted and only protected by the file system

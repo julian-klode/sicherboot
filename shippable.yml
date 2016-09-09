@@ -1,0 +1,11 @@
+language: none
+
+build:
+  pre_ci_boot:
+    image_name: ubuntu
+    image_tag: xenial
+    pull: true
+  ci:
+    - touch /etc/kernel/cmdline
+    - apt-get install -y -qq efitools binutils systemd fakeroot uuid-runtime
+    - run-parts -v tests
