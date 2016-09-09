@@ -37,7 +37,9 @@ for EFI_ARCH in "x64" "aa64" "aarch64" "ia32"; do
     fi
 done
 
-if [ -e /etc/sicherboot/sicherboot.conf ]; then
+if [ -n "$SICHERBOOT_CONFIGURATION_FILE_INTERNAL" ]; then
+    . $SICHERBOOT_CONFIGURATION_FILE_INTERNAL
+elif [ -e /etc/sicherboot/sicherboot.conf ]; then
     . /etc/sicherboot/sicherboot.conf
 fi
 
