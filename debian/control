@@ -10,7 +10,7 @@ Vcs-Browser: https://github.com/julian-klode/sicherboot
 
 Package: sicherboot
 Architecture: all
-Depends: ${misc:Depends}, ${shlibs:Depends}, efitools, binutils, systemd
+Depends: ${misc:Depends}, ${shlibs:Depends}, efitools, binutils, systemd, uuid-runtime
 Enhances: dracut, systemd, initramfs-tool
 Description: systemd-boot integration with UEFI secure boot support
  sicher*boot manages kernels and systemd-boot on a secure boot
