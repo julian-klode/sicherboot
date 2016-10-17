@@ -1,3 +1,15 @@
+sicherboot (0.1.2) unstable; urgency=medium
+
+  * Rename sicherboot.1 to sicherboot.8
+  * Fix registration of KeyTool in the bootloader
+  * Add support for SICHERBOOT_CONFIGURATION_FILE_INTERNAL variable
+  * Create directories before copying or writing files
+  * debian: Add dependency on uuid-runtime
+  * Find KeyTool.efi on Ubuntu systems
+  * Add continous integration via shippable
+
+ -- Julian Andres Klode <jak@debian.org>  Mon, 17 Oct 2016 23:13:23 +0200
+
 sicherboot (0.1.1) unstable; urgency=low
 
   * kernel/postinst.d/dracut: Pass arguments to dracut
