@@ -11,7 +11,7 @@ Vcs-Browser: https://github.com/julian-klode/sicherboot
 Package: sicherboot
 Architecture: all
 Depends: ${misc:Depends}, ${shlibs:Depends}, efitools, binutils, systemd, uuid-runtime
-Enhances: dracut, systemd, initramfs-tool
+Enhances: dracut, systemd, initramfs-tools
 Description: systemd-boot integration with UEFI secure boot support
  sicher*boot manages kernels and systemd-boot on a secure boot
  machine. It installs kernels and systemd-boot, generates signing keys to
