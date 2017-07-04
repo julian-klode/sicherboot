@@ -156,8 +156,8 @@ remove_kernel() {
     local image="$image_dir/linux.efi"
     local conf="$BOOT_EFI_DIR/loader/entries/$MACHINE_ID-$version.conf"
 
-    rm "$conf"
-    rm "$image"
+    rm "$conf" || true
+    rm "$image" || true
     rmdir "$image_dir" || true
 }
 
