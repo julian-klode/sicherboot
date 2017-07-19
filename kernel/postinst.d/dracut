@@ -5,11 +5,13 @@
 
 set -e
 
+sicherboot_kernel_version="$1"
+
 # Run the real dracut first if it exists
 if [ -e /etc/kernel/postinst.d/dracut.SecureBoot ]; then
-    /etc/kernel/postinst.d/dracut.SecureBoot "$@"
+    . /etc/kernel/postinst.d/dracut.SecureBoot
 fi
 
-echo "sicherboot: Installing $1 to ESP"
+echo "sicherboot: Installing $sicherboot_kernel_version to ESP"
 
-sicherboot install-kernel "$1"
+sicherboot install-kernel "$sicherboot_kernel_version"
