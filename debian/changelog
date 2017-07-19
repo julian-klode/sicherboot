@@ -1,3 +1,13 @@
+sicherboot (0.1.4) unstable; urgency=medium
+
+  [ Julian Andres Klode ]
+  * Make the dracut script do nothing on non-dracut systems (Closes: #868890)
+
+  [ RjY ]
+  * Handle non-enrolled keys
+
+ -- Julian Andres Klode <jak@debian.org>  Wed, 19 Jul 2017 17:42:03 +0200
+
 sicherboot (0.1.3) unstable; urgency=medium
 
   * debian: Enhances initramfs-tools, not initramfs-tool (Closes: #840772)
