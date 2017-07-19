@@ -100,6 +100,11 @@ sign_image() {
         exit 1
     fi
 
+    if [ ! \( -e "${KEY_HOME}/db.key" -a -e "${KEY_HOME}/db.crt" \) ]; then
+        echo "No db.key, skipping sign_image."
+        return 0
+    fi
+
     local image="$1"
     local out="$2"
 
