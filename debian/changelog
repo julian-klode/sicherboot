@@ -23,7 +23,7 @@ sicherboot (0.1.2) unstable; urgency=medium
   * Create directories before copying or writing files
   * debian: Add dependency on uuid-runtime
   * Find KeyTool.efi on Ubuntu systems
-  * Add continous integration via shippable
+  * Add continuous integration via shippable
 
  -- Julian Andres Klode <jak@debian.org>  Mon, 17 Oct 2016 23:13:23 +0200
 
