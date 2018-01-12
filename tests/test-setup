@@ -50,6 +50,7 @@ testsuccess test -e tmp/efi/loader/entries/machine-id-keytool.conf
 cat >> $PWD/tmp/bootctl << EOF
 #!/bin/sh
 install -D /usr/lib/systemd/boot/efi/systemd-boot${EFI_ARCH}.efi $PWD/tmp/efi/EFI/systemd/systemd-boot${EFI_ARCH}.efi
+echo "Copied \"/usr/lib/systemd/boot/efi/systemd-boot${EFI_ARCH}.efi\" to \"$PWD/tmp/efi/EFI/systemd/systemd-bootx64.efi\"."
 EOF
 
 chmod +x $PWD/tmp/bootctl
