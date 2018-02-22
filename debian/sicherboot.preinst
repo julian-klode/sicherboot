@@ -3,7 +3,8 @@
 set -e
 
 if [ "$1" = "install" ]; then
-    dpkg-divert --package sicherboot --divert /etc/kernel/postinst.d/dracut.SecureBoot --rename /etc/kernel/postinst.d/dracut
+    dpkg-divert --package sicherboot --divert /etc/kernel/postinst.d/dracut.SecureBoot --rename /etc/kernel/postinst.d/zz-dracut
+    dpkg-divert --package sicherboot --divert /etc/kernel/postinst.d/dracut --rename /etc/kernel/postinst.d/zz-dracut
 fi
 
 #DEBHELPER#
