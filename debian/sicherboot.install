@@ -1,3 +1,3 @@
-kernel/postinst.d/dracut etc/kernel/postinst.d
+kernel/postinst.d/dracut etc/kernel/postinst.d/zz-dracut
 kernel/postrm.d/* etc/kernel/postrm.d/
 initramfs/post-update.d/* etc/initramfs/post-update.d
