@@ -8,10 +8,7 @@ set -e
 sicherboot_kernel_version="$1"
 
 # Run the real dracut first if it exists
-if [ -e /etc/kernel/postinst.d/dracut.SecureBoot ]; then
-    . /etc/kernel/postinst.d/dracut.SecureBoot
-fi
-
+[ -e /etc/kernel/postinst.d/dracut.SecureBoot ] || exit 0
 
 sicherboot > /dev/null 2>&1 || exit 0
 
