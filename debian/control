@@ -2,7 +2,7 @@ Source: sicherboot
 Section: utils
 Priority: optional
 Maintainer: Julian Andres Klode <jak@debian.org>
-Build-Depends: debhelper (>= 9), pandoc
+Build-Depends: debhelper (>= 11), pandoc
 Standards-Version: 4.1.3
 Homepage: https://github.com/julian-klode/sicherboot
 Vcs-Git: https://github.com/julian-klode/sicherboot
