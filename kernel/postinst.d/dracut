@@ -12,7 +12,7 @@ sicherboot_kernel_version="$1"
 
 . /etc/kernel/postinst.d/dracut.SecureBoot
 
-sicherboot > /dev/null 2>&1 || exit 0
+sicherboot help > /dev/null 2>&1 || exit 0
 
 echo "sicherboot: Installing $sicherboot_kernel_version to ESP"
 
