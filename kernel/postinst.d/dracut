@@ -12,6 +12,9 @@ if [ -e /etc/kernel/postinst.d/dracut.SecureBoot ]; then
     . /etc/kernel/postinst.d/dracut.SecureBoot
 fi
 
+
+sicherboot > /dev/null 2>&1 || exit 0
+
 echo "sicherboot: Installing $sicherboot_kernel_version to ESP"
 
 sicherboot install-kernel "$sicherboot_kernel_version"

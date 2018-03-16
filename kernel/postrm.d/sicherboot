@@ -1,3 +1,4 @@
 #!/bin/sh
 
+sicherboot > /dev/null 2>&1 || exit 0
 sicherboot remove-kernel "$1"
