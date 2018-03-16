@@ -1,11 +1,4 @@
 #!/bin/sh
-case "$DPKG_MAINTSCRIPT_PACKAGE" in
-    linux-image-*)
-        # will be run by the kernel hooks later on
-        exit 0
-        ;;
-    *)
-        sicherboot > /dev/null 2>&1 || exit 0
-        sicherboot install-kernel "$1"
-        ;;
-esac
+
+sicherboot > /dev/null 2>&1 || exit 0
+sicherboot install-kernel "$1"
