@@ -172,8 +172,11 @@ BOOTCTL_HELP="Usage: sicherboot bootctl [<argument> ...]
   systemd-boot${EFI_ARCH}.efi
 "
 bootctl() {
-    command bootctl --path="$BOOT_EFI_DIR" "$@"
-    sign_image "$BOOT_EFI_DIR/EFI/systemd/systemd-boot${EFI_ARCH}.efi"
+    PATHS=`command bootctl --path="$BOOT_EFI_DIR" "$@" 2>&1 | grep $BOOT_EFI_DIR | cut -d'"' -f 4`
+    for item in $PATHS
+    do
+      sign_image "$item"
+    done
 }
 
 
